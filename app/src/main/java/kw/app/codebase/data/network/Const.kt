@@ -10,8 +10,8 @@ package kw.app.codebase.data.network
  * A singleton class for network related constant values.
  */
 object Const {
-    private const val DEFAULT_SERVER_ADDRESS = "https://server_address"
-    const val SERVICE_PREFIX = "$DEFAULT_SERVER_ADDRESS/api/"
+    private const val DEFAULT_SERVER_ADDRESS = "https://newsapi.org/"
+    const val SERVICE_PREFIX = DEFAULT_SERVER_ADDRESS
     const val IMAGE_PREFIX = "$DEFAULT_SERVER_ADDRESS/"
     const val REQUEST_TIMEOUT = 60L
 

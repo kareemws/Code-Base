@@ -23,12 +23,6 @@ data class ResponseWrapper<ResultType> private constructor(
     companion object {
 
         /**
-         * Creates [ResponseWrapper] instance with "LOADING" status
-         */
-        fun <ResultType> loading(): ResponseWrapper<ResultType> =
-            ResponseWrapper(Status.LOADING)
-
-        /**
          * Creates [ResponseWrapper] object with `SUCCESS` status and [data].
          */
         fun <ResultType> success(data: ResultType): ResponseWrapper<ResultType> =

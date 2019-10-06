@@ -1,6 +1,5 @@
 package kw.app.codebase.data.network
 
-import kw.app.codebase.data.network.adapter.LiveDataCallAdapterFactory
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -44,11 +43,14 @@ object RetrofitClientConstructor {
         return Retrofit.Builder()
             .baseUrl(Const.SERVICE_PREFIX).client(httpClient.build())
             .addConverterFactory(GsonConverterFactory.create())
-            .addCallAdapterFactory(LiveDataCallAdapterFactory())
             .build()
     }
 
     fun reconstructRetrofitClient(token: String?) {
         retrofitClient = initClient(token)
+    }
+
+    fun getServiceObject(): Service {
+        return retrofitClient.create(Service::class.java)
     }
 }
