@@ -46,8 +46,9 @@ object RetrofitClientConstructor {
             .build()
     }
 
-    fun reconstructRetrofitClient(token: String?) {
+    fun reconstructRetrofitClient(token: String?): Service {
         retrofitClient = initClient(token)
+        return retrofitClient.create(Service::class.java)
     }
 
     fun getServiceObject(): Service {

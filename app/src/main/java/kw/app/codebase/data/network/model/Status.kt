@@ -14,16 +14,14 @@ enum class Status {
     FAILED_TO_CONNECT;
 
     companion object {
-        fun construct(status: Int?): Status {
-            return when (status) {
-                200 -> SUCCESS
-                204 -> NO_CONTENT
-                401 -> UNAUTHORIZED
-                403 -> FORBIDDEN
-                422 -> VALIDATION_ERROR
-                500 -> INTERNAL_SERVER_ERROR
-                else -> FAILED_TO_CONNECT
-            }
+        fun construct(status: Int?): Status = when (status) {
+            200 -> SUCCESS
+            204 -> NO_CONTENT
+            401 -> UNAUTHORIZED
+            403 -> FORBIDDEN
+            422 -> VALIDATION_ERROR
+            500 -> INTERNAL_SERVER_ERROR
+            else -> FAILED_TO_CONNECT
         }
     }
 }
