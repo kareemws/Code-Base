@@ -14,7 +14,7 @@ import java.util.*
 private const val VIEW_DATE_FORMAT = "dd-MM-yyyy"
 private const val REMOTE_DATE_FORMAT = "yyyy-MM-dd"
 
-abstract class DateTokenizer {
+abstract class DateUtils {
 
     companion object {
         private val remoteFormatter = SimpleDateFormat(REMOTE_DATE_FORMAT, Locale.ENGLISH)

@@ -17,8 +17,8 @@ import java.util.concurrent.TimeUnit
  * the retrofit client with [OkHttpClient]
  */
 
-object RetrofitClientConstructor {
-    var retrofitClient = initClient()
+object RetrofitStore {
+    private var retrofitClient = initClient()
 
     private fun initClient(token: String? = null): Retrofit {
 
