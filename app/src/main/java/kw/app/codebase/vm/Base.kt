@@ -24,10 +24,7 @@ abstract class Base(application: Application) : AndroidViewModel(application) {
     fun getCommandEmitter(): LiveData<Command> = commandEmitter
 
     open fun acknowledgeCommand(instruction: Instruction) {
-        if (instructionsQueue.isEmpty()) {
-            isWaitingForAcknowledgement = false
-        } else
-            commandEmitter.postValue(Command(instructionsQueue.poll()!!, this::class.java.name))
+        pollNext()
     }
 
     protected fun enqueueAnInstruction(instruction: Instruction) {
@@ -36,5 +33,12 @@ abstract class Base(application: Application) : AndroidViewModel(application) {
             commandEmitter.postValue(Command(instructionsQueue.poll()!!, this::class.java.name))
             isWaitingForAcknowledgement = true
         }
+    }
+
+    protected fun pollNext(){
+        if (instructionsQueue.isEmpty()) {
+            isWaitingForAcknowledgement = false
+        } else
+            commandEmitter.postValue(Command(instructionsQueue.poll()!!, this::class.java.name))
     }
 }
