@@ -1,5 +1,6 @@
 package kw.app.codebase.data.network
 
+import androidx.lifecycle.Observer
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -19,6 +20,8 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitStore {
     private var retrofitClient = initClient()
+
+    private val subscribers = ArrayList<Observer<Service>>()
 
     private fun initClient(token: String? = null): Retrofit {
 
@@ -46,12 +49,22 @@ object RetrofitStore {
             .build()
     }
 
-    fun reconstructRetrofitClient(token: String?): Service {
+    fun reconstructRetrofitClient(token: String?) {
         retrofitClient = initClient(token)
-        return retrofitClient.create(Service::class.java)
+        subscribers.forEach {
+            it.onChanged(getServiceObject())
+        }
     }
 
     fun getServiceObject(): Service {
         return retrofitClient.create(Service::class.java)
+    }
+
+    fun attachServiceObserver(observer: Observer<Service>) {
+        subscribers.add(observer)
+    }
+
+    fun detachServiceObserver(observer: Observer<Service>) {
+        subscribers.remove(observer)
     }
 }
