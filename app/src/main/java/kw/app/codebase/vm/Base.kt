@@ -31,7 +31,7 @@ abstract class Base(application: Application) : AndroidViewModel(application) {
 
     val signalsEmitter: LiveData<Signal> = signalsEmitterMLive
 
-    open fun acknowledgeCommand(command: Command) {
+    open fun acknowledgeSignal(signal: Signal) {
         pollNext()
     }
 
