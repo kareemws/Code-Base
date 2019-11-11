@@ -8,11 +8,13 @@ import androidx.lifecycle.Observer
 import kw.app.codebase.data.network.RetrofitStore
 import kw.app.codebase.data.network.Service
 import kw.app.codebase.view.utility.Command
-import kw.app.codebase.view.utility.Command.SIT_IDLE
+import kw.app.codebase.view.utility.Command.*
 import kw.app.codebase.view.utility.Signal
 import java.util.*
 
 abstract class Base(application: Application) : AndroidViewModel(application) {
+
+    val signature: String = this::class.java.name
 
     protected var webService = RetrofitStore.getServiceObject()
     private val webServiceObserver = Observer<Service> { service ->
@@ -31,14 +33,32 @@ abstract class Base(application: Application) : AndroidViewModel(application) {
 
     val signalsEmitter: LiveData<Signal> = signalsEmitterMLive
 
-    open fun acknowledgeCommand(command: Command) {
-        pollNext()
+    open fun acknowledgeSignal(signal: Signal) {
+        if (signal.signature == signature)
+            pollNext()
     }
 
-    protected fun enqueueACommand(command: Command) {
+    protected fun enqueueCommand(
+        command: Command,
+        isLastInSequence: Boolean = false,
+        requiresLoading: Boolean = false,
+        stopsLoadingBefore: Boolean = false,
+        stopsLoadingAfter: Boolean = false,
+        causesNavigation: Boolean = false
+    ) {
+        if (requiresLoading)
+            commandsQueue.add(LOAD)
+        if (stopsLoadingBefore && !requiresLoading)
+            commandsQueue.add(STOP_LOADING)
+
         commandsQueue.add(command)
+
+        if (stopsLoadingAfter && !stopsLoadingBefore)
+            commandsQueue.add(STOP_LOADING)
+        if (isLastInSequence || causesNavigation)
+            commandsQueue.add(SIT_IDLE)
         if (!isWaitingForAcknowledgement) {
-            signalsEmitterMLive.postValue(Signal(commandsQueue.poll()!!, this::class.java.name))
+            signalsEmitterMLive.postValue(Signal(commandsQueue.poll()!!, signature))
             isWaitingForAcknowledgement = true
         }
     }
@@ -47,17 +67,7 @@ abstract class Base(application: Application) : AndroidViewModel(application) {
         if (commandsQueue.isEmpty()) {
             isWaitingForAcknowledgement = false
         } else
-            signalsEmitterMLive.postValue(Signal(commandsQueue.poll()!!, this::class.java.name))
-    }
-
-    private fun emptyCommandsQueue() {
-        commandsQueue.clear()
-        isWaitingForAcknowledgement = false
-    }
-
-    protected fun forceMoveToIdle() {
-        emptyCommandsQueue()
-        signalsEmitterMLive.value = Signal(SIT_IDLE, this::class.java.name)
+            signalsEmitterMLive.postValue(Signal(commandsQueue.poll()!!, signature))
     }
 
     override fun onCleared() {

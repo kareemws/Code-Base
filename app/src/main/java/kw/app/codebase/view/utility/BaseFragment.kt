@@ -6,9 +6,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import kw.app.codebase.vm.App
+import kw.app.codebase.vm.Base
 import java.util.*
 
-open class BaseFragment : Fragment() {
+abstract class BaseFragment : Fragment() {
+    protected val signature: String = this::class.java.name
+
     protected val avm: App by activityViewModels()
 
     private val signalsQueue = LinkedList<Signal>()
@@ -17,6 +20,8 @@ open class BaseFragment : Fragment() {
     protected val internalSignalsEmitter: LiveData<Signal> = internalSignalsEmitterMLive
 
     private var isProcessing: Boolean = false
+
+    private var isLoading = false
 
     protected val externalSignalsObserver = Observer<Signal> { command ->
         signalsQueue.add(command)
@@ -31,5 +36,15 @@ open class BaseFragment : Fragment() {
             isProcessing = false
         else
             internalSignalsEmitterMLive.postValue(signalsQueue.poll())
+    }
+
+    protected fun setupSignalsObservers(
+        signalsObserver: Observer<Signal>,
+        vararg viewModels: Base
+    ) {
+        viewModels.forEach { vm ->
+            vm.signalsEmitter.observe(viewLifecycleOwner, externalSignalsObserver)
+        }
+        internalSignalsEmitter.observe(viewLifecycleOwner, signalsObserver)
     }
 }

@@ -27,12 +27,13 @@ abstract class DateUtils {
                 viewFormatter.format(date)
         }
 
-        fun convert(date: String, isFromRemote: Boolean = false): Date {
-            return if (isFromRemote)
-                remoteFormatter.parse(date)!!
-            else
-                viewFormatter.parse(date)!!
-        }
+        fun convert(date: String?, isFromRemote: Boolean = false): Date? =
+            date?.let { assertedDate ->
+                return if (isFromRemote)
+                    remoteFormatter.parse(assertedDate)
+                else
+                    viewFormatter.parse(assertedDate)
+            }
 
 
         fun isEqualDates(fDate: Date?, sDate: Date?): Boolean {
