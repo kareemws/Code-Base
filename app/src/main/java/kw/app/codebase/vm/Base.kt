@@ -1,6 +1,7 @@
 package kw.app.codebase.vm
 
 import android.app.Application
+import androidx.collection.ArraySet
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -10,11 +11,14 @@ import kw.app.codebase.data.network.Service
 import kw.app.codebase.view.utility.Command
 import kw.app.codebase.view.utility.Command.*
 import kw.app.codebase.view.utility.Signal
+import kw.app.codebase.view.utility.Signal.Companion.FLAG_CAUSES_NAVIGATION
+import kw.app.codebase.view.utility.Signal.Companion.FLAG_IS_LAST_IN_SEQUENCE
+import kw.app.codebase.view.utility.Signal.Companion.FLAG_REQUIRES_LOADING
+import kw.app.codebase.view.utility.Signal.Companion.FLAG_STOPS_LOADING_AFTER
+import kw.app.codebase.view.utility.Signal.Companion.FLAG_STOPS_LOADING_BEFORE
 import java.util.*
 
 abstract class Base(application: Application) : AndroidViewModel(application) {
-
-    val signature: String = this::class.java.name
 
     protected var webService = RetrofitStore.getServiceObject()
     private val webServiceObserver = Observer<Service> { service ->
@@ -25,7 +29,10 @@ abstract class Base(application: Application) : AndroidViewModel(application) {
         RetrofitStore.attachServiceObserver(webServiceObserver)
     }
 
-    private val commandsQueue = LinkedList<Command>()
+
+    protected val signature: String = this::class.java.name
+
+    private val signalsQueue = LinkedList<Signal>()
 
     private var isWaitingForAcknowledgement: Boolean = false
 
@@ -34,40 +41,43 @@ abstract class Base(application: Application) : AndroidViewModel(application) {
     val signalsEmitter: LiveData<Signal> = signalsEmitterMLive
 
     open fun acknowledgeSignal(signal: Signal) {
-        if (signal.signature == signature)
+        if (signal.flags.contains(FLAG_CAUSES_NAVIGATION)) {
+            isWaitingForAcknowledgement = false
+            signalsQueue.clear()
+            signalsEmitterMLive.value = Signal(SIT_IDLE, signature, ArraySet())
+        } else if (signal.signature == signature)
             pollNext()
     }
 
-    protected fun enqueueCommand(
-        command: Command,
-        isLastInSequence: Boolean = false,
-        requiresLoading: Boolean = false,
-        stopsLoadingBefore: Boolean = false,
-        stopsLoadingAfter: Boolean = false,
-        causesNavigation: Boolean = false
-    ) {
-        if (requiresLoading)
-            commandsQueue.add(LOAD)
-        if (stopsLoadingBefore && !requiresLoading)
-            commandsQueue.add(STOP_LOADING)
+    protected fun enqueueCommand(command: Command, vararg flags: Int) {
+        val flagsSet = flags.toCollection(ArraySet())
 
-        commandsQueue.add(command)
+        if (flagsSet.contains(FLAG_REQUIRES_LOADING))
+            signalsQueue.add(Signal(LOAD, signature, flagsSet))
+        else if (flagsSet.contains(FLAG_STOPS_LOADING_BEFORE))
+            signalsQueue.add(Signal(STOP_LOADING, signature, flagsSet))
 
-        if (stopsLoadingAfter && !stopsLoadingBefore)
-            commandsQueue.add(STOP_LOADING)
-        if (isLastInSequence || causesNavigation)
-            commandsQueue.add(SIT_IDLE)
+        signalsQueue.add(Signal(command, signature, flagsSet))
+
+        if (flagsSet.contains(FLAG_STOPS_LOADING_AFTER)
+            && !flagsSet.contains(FLAG_STOPS_LOADING_BEFORE)
+        )
+            signalsQueue.add(Signal(STOP_LOADING, signature, flagsSet))
+
+        if (flagsSet.contains(FLAG_IS_LAST_IN_SEQUENCE))
+            signalsQueue.add(Signal(SIT_IDLE, signature, flagsSet))
+
         if (!isWaitingForAcknowledgement) {
-            signalsEmitterMLive.postValue(Signal(commandsQueue.poll()!!, signature))
             isWaitingForAcknowledgement = true
+            pollNext()
         }
     }
 
     private fun pollNext() {
-        if (commandsQueue.isEmpty()) {
+        if (signalsQueue.isEmpty()) {
             isWaitingForAcknowledgement = false
         } else
-            signalsEmitterMLive.postValue(Signal(commandsQueue.poll()!!, signature))
+            signalsEmitterMLive.postValue(signalsQueue.poll())
     }
 
     override fun onCleared() {

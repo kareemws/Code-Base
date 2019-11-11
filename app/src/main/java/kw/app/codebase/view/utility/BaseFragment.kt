@@ -10,7 +10,6 @@ import kw.app.codebase.vm.Base
 import java.util.*
 
 abstract class BaseFragment : Fragment() {
-    protected val signature: String = this::class.java.name
 
     protected val avm: App by activityViewModels()
 
@@ -21,13 +20,12 @@ abstract class BaseFragment : Fragment() {
 
     private var isProcessing: Boolean = false
 
-    private var isLoading = false
 
-    protected val externalSignalsObserver = Observer<Signal> { command ->
-        signalsQueue.add(command)
+    protected val externalSignalsObserver = Observer<Signal> { signal ->
+        signalsQueue.add(signal)
         if (!isProcessing) {
             isProcessing = true
-            internalSignalsEmitterMLive.postValue(signalsQueue.poll())
+            resume()
         }
     }
 
