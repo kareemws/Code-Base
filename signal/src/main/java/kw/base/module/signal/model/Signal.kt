@@ -1,4 +1,4 @@
-package kw.app.codebase.view.utility
+package kw.base.module.signal.model
 
 import androidx.collection.ArraySet
 

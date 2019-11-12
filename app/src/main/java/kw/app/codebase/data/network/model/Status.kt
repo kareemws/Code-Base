@@ -6,6 +6,7 @@ package kw.app.codebase.data.network.model
  */
 enum class Status {
     SUCCESS,
+    CREATED,
     NO_CONTENT,
     UNAUTHORIZED,
     FORBIDDEN,
@@ -16,6 +17,7 @@ enum class Status {
     companion object {
         fun construct(status: Int?): Status = when (status) {
             200 -> SUCCESS
+            201 -> CREATED
             204 -> NO_CONTENT
             401 -> UNAUTHORIZED
             403 -> FORBIDDEN

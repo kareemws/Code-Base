@@ -1,2 +1,2 @@
-include ':app'
+include ':app', ':signal'
 rootProject.name='Code Base'

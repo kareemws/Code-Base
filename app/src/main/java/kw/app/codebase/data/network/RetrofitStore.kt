@@ -49,11 +49,9 @@ object RetrofitStore {
             .build()
     }
 
-    fun reconstructRetrofitClient(token: String?) {
+    fun setToken(token: String?) {
         retrofitClient = initClient(token)
-        subscribers.forEach {
-            it.onChanged(getServiceObject())
-        }
+        notifyObservers()
     }
 
     fun getServiceObject(): Service {
@@ -66,5 +64,11 @@ object RetrofitStore {
 
     fun detachServiceObserver(observer: Observer<Service>) {
         subscribers.remove(observer)
+    }
+
+    private fun notifyObservers() {
+        subscribers.forEach {
+            it.onChanged(getServiceObject())
+        }
     }
 }

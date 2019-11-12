@@ -1,35 +1,22 @@
-package kw.app.codebase.vm
+package kw.base.module.signal.vm
 
 import android.app.Application
 import androidx.collection.ArraySet
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
-import kw.app.codebase.data.network.RetrofitStore
-import kw.app.codebase.data.network.Service
-import kw.app.codebase.view.utility.Commands.LOAD
-import kw.app.codebase.view.utility.Commands.SIT_IDLE
-import kw.app.codebase.view.utility.Commands.STOP_LOADING
-import kw.app.codebase.view.utility.Signal
-import kw.app.codebase.view.utility.Signal.Companion.FLAG_CAUSES_NAVIGATION
-import kw.app.codebase.view.utility.Signal.Companion.FLAG_IS_LAST_IN_SEQUENCE
-import kw.app.codebase.view.utility.Signal.Companion.FLAG_REQUIRES_LOADING
-import kw.app.codebase.view.utility.Signal.Companion.FLAG_STOPS_LOADING_AFTER
-import kw.app.codebase.view.utility.Signal.Companion.FLAG_STOPS_LOADING_BEFORE
+import kw.base.module.signal.model.Signal
+import kw.base.module.signal.model.Signal.Companion.FLAG_CAUSES_NAVIGATION
+import kw.base.module.signal.model.Signal.Companion.FLAG_IS_LAST_IN_SEQUENCE
+import kw.base.module.signal.model.Signal.Companion.FLAG_REQUIRES_LOADING
+import kw.base.module.signal.model.Signal.Companion.FLAG_STOPS_LOADING_AFTER
+import kw.base.module.signal.model.Signal.Companion.FLAG_STOPS_LOADING_BEFORE
+import kw.base.module.signal.utility.Commands.LOAD
+import kw.base.module.signal.utility.Commands.SIT_IDLE
+import kw.base.module.signal.utility.Commands.STOP_LOADING
 import java.util.*
 
 abstract class Base(application: Application) : AndroidViewModel(application) {
-
-    protected var webService = RetrofitStore.getServiceObject()
-    private val webServiceObserver = Observer<Service> { service ->
-        webService = service
-    }
-
-    init {
-        RetrofitStore.attachServiceObserver(webServiceObserver)
-    }
-
 
     protected val signature: String = this::class.java.name
 
@@ -79,10 +66,5 @@ abstract class Base(application: Application) : AndroidViewModel(application) {
             isWaitingForAcknowledgement = false
         } else
             signalsEmitterMLive.postValue(signalsQueue.poll())
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        RetrofitStore.detachServiceObserver(webServiceObserver)
     }
 }

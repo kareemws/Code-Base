@@ -1,17 +1,14 @@
-package kw.app.codebase.view.utility
+package kw.base.module.signal.view
 
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import kw.app.codebase.vm.App
-import kw.app.codebase.vm.Base
+import kw.base.module.signal.model.Signal
+import kw.base.module.signal.vm.Base
 import java.util.*
 
 abstract class BaseFragment : Fragment() {
-
-    protected val avm: App by activityViewModels()
 
     private val signalsQueue = LinkedList<Signal>()
 
