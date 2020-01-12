@@ -8,15 +8,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import kw.app.codebase.data.network.RetrofitStore
 import kw.app.codebase.data.network.Service
-import kw.app.codebase.view.utility.Commands.LOAD
-import kw.app.codebase.view.utility.Commands.SIT_IDLE
-import kw.app.codebase.view.utility.Commands.STOP_LOADING
+import kw.app.codebase.view.utility.Load
 import kw.app.codebase.view.utility.Signal
 import kw.app.codebase.view.utility.Signal.Companion.FLAG_CAUSES_NAVIGATION
 import kw.app.codebase.view.utility.Signal.Companion.FLAG_IS_LAST_IN_SEQUENCE
 import kw.app.codebase.view.utility.Signal.Companion.FLAG_REQUIRES_LOADING
 import kw.app.codebase.view.utility.Signal.Companion.FLAG_STOPS_LOADING_AFTER
 import kw.app.codebase.view.utility.Signal.Companion.FLAG_STOPS_LOADING_BEFORE
+import kw.app.codebase.view.utility.SitIdle
+import kw.app.codebase.view.utility.StopLoading
 import java.util.*
 
 abstract class Base(application: Application) : AndroidViewModel(application) {
@@ -45,28 +45,28 @@ abstract class Base(application: Application) : AndroidViewModel(application) {
         if (signal.flags.contains(FLAG_CAUSES_NAVIGATION)) {
             isWaitingForAcknowledgement = false
             signalsQueue.clear()
-            signalsEmitterMLive.value = Signal(SIT_IDLE, signature, ArraySet())
+            signalsEmitterMLive.value = SitIdle(signature, ArraySet())
         } else if (signal.signature == signature)
             pollNext()
     }
 
-    protected fun enqueueCommand(command: String, vararg flags: Int) {
-        val flagsSet = flags.toCollection(ArraySet())
+    protected fun enqueueCommand(signal: Signal) {
+        signal.apply {
+            if (flags.contains(FLAG_REQUIRES_LOADING))
+                signalsQueue.add(Load(signature))
+            else if (flags.contains(FLAG_STOPS_LOADING_BEFORE))
+                signalsQueue.add(StopLoading(signature))
 
-        if (flagsSet.contains(FLAG_REQUIRES_LOADING))
-            signalsQueue.add(Signal(LOAD, signature, flagsSet))
-        else if (flagsSet.contains(FLAG_STOPS_LOADING_BEFORE))
-            signalsQueue.add(Signal(STOP_LOADING, signature, flagsSet))
+            signalsQueue.add(this)
 
-        signalsQueue.add(Signal(command, signature, flagsSet))
+            if (flags.contains(FLAG_STOPS_LOADING_AFTER)
+                && !flags.contains(FLAG_STOPS_LOADING_BEFORE)
+            )
+                signalsQueue.add(StopLoading(signature))
 
-        if (flagsSet.contains(FLAG_STOPS_LOADING_AFTER)
-            && !flagsSet.contains(FLAG_STOPS_LOADING_BEFORE)
-        )
-            signalsQueue.add(Signal(STOP_LOADING, signature, flagsSet))
-
-        if (flagsSet.contains(FLAG_IS_LAST_IN_SEQUENCE))
-            signalsQueue.add(Signal(SIT_IDLE, signature, flagsSet))
+            if (flags.contains(FLAG_IS_LAST_IN_SEQUENCE))
+                signalsQueue.add(SitIdle(signature))
+        }
 
         if (!isWaitingForAcknowledgement) {
             isWaitingForAcknowledgement = true

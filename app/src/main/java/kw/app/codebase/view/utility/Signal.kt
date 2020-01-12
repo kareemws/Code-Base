@@ -2,7 +2,7 @@ package kw.app.codebase.view.utility
 
 import androidx.collection.ArraySet
 
-class Signal(val command: String, val signature: String, val flags: ArraySet<Int>) {
+sealed class Signal(val signature: String, val flags: ArraySet<Int> = ArraySet()) {
     companion object {
         const val FLAG_REQUIRES_LOADING = 0
         const val FLAG_CAUSES_NAVIGATION = 1
@@ -11,3 +11,9 @@ class Signal(val command: String, val signature: String, val flags: ArraySet<Int
         const val FLAG_IS_LAST_IN_SEQUENCE = 4
     }
 }
+
+class Load(signature: String) : Signal(signature)
+class StopLoading(signature: String, flags: ArraySet<Int> = ArraySet()) : Signal(signature, flags)
+class SitIdle(signature: String, flags: ArraySet<Int> = ArraySet()) : Signal(signature, flags)
+abstract class CustomSignal(signature: String, flags: ArraySet<Int> = ArraySet()) :
+    Signal(signature, flags)
