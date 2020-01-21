@@ -1,11 +1,11 @@
-package kw.base.module.signal.view
+package kw.module.vvm_eventbus.view
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import kw.base.module.signal.model.Signal
-import kw.base.module.signal.vm.Base
+import kw.module.vvm_eventbus.model.Signal
+import kw.module.vvm_eventbus.vm.Base
 import java.util.*
 
 abstract class Base : Fragment() {

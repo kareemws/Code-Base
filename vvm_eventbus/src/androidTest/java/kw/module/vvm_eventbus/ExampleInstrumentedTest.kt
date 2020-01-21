@@ -1,4 +1,4 @@
-package kw.base.module.signal
+package kw.module.vvm_eventbus
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("kw.base.module.signal.test", appContext.packageName)
+        assertEquals("kw.module.signal.test", appContext.packageName)
     }
 }

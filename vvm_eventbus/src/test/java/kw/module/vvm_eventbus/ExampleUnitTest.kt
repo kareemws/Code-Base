@@ -1,4 +1,4 @@
-package kw.base.module.signal
+package kw.module.vvm_eventbus
 
 import org.junit.Test
 

@@ -1,4 +1,4 @@
-package kw.base.module.signal.utility
+package kw.module.vvm_eventbus.utility
 
 object Commands {
     const val LOAD = "LOAD"

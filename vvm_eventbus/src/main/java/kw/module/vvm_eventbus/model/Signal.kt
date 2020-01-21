@@ -1,4 +1,4 @@
-package kw.base.module.signal.model
+package kw.module.vvm_eventbus.model
 
 import androidx.collection.ArraySet
 
