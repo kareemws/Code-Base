@@ -5,12 +5,15 @@ import androidx.collection.ArraySet
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import kw.base.module.signal.model.Load
 import kw.base.module.signal.model.Signal
 import kw.base.module.signal.model.Signal.Companion.FLAG_CAUSES_NAVIGATION
 import kw.base.module.signal.model.Signal.Companion.FLAG_IS_LAST_IN_SEQUENCE
 import kw.base.module.signal.model.Signal.Companion.FLAG_REQUIRES_LOADING
 import kw.base.module.signal.model.Signal.Companion.FLAG_STOPS_LOADING_AFTER
 import kw.base.module.signal.model.Signal.Companion.FLAG_STOPS_LOADING_BEFORE
+import kw.base.module.signal.model.SitIdle
+import kw.base.module.signal.model.StopLoading
 import kw.base.module.signal.utility.Commands.LOAD
 import kw.base.module.signal.utility.Commands.SIT_IDLE
 import kw.base.module.signal.utility.Commands.STOP_LOADING
@@ -24,36 +27,35 @@ abstract class Base(application: Application) : AndroidViewModel(application) {
 
     private var isWaitingForAcknowledgement: Boolean = false
 
-    private val signalsEmitterMLive = MutableLiveData<Signal>()
-
-    val signalsEmitter: LiveData<Signal> = signalsEmitterMLive
+    private val _signalsEmitter = MutableLiveData<Signal>()
+    val signalsEmitter: LiveData<Signal> = _signalsEmitter
 
     open fun acknowledgeSignal(signal: Signal) {
         if (signal.flags.contains(FLAG_CAUSES_NAVIGATION)) {
             isWaitingForAcknowledgement = false
             signalsQueue.clear()
-            signalsEmitterMLive.value = Signal(SIT_IDLE, signature, ArraySet())
+            _signalsEmitter.value = SitIdle(signature, ArraySet())
         } else if (signal.signature == signature)
             pollNext()
     }
 
-    protected fun enqueueCommand(command: String, vararg flags: Int) {
-        val flagsSet = flags.toCollection(ArraySet())
+    protected fun enqueueSignal(signal: Signal) {
+        signal.apply {
+            if (flags.contains(FLAG_REQUIRES_LOADING))
+                signalsQueue.add(Load(signature))
+            else if (flags.contains(FLAG_STOPS_LOADING_BEFORE))
+                signalsQueue.add(StopLoading(signature))
 
-        if (flagsSet.contains(FLAG_REQUIRES_LOADING))
-            signalsQueue.add(Signal(LOAD, signature, flagsSet))
-        else if (flagsSet.contains(FLAG_STOPS_LOADING_BEFORE))
-            signalsQueue.add(Signal(STOP_LOADING, signature, flagsSet))
+            signalsQueue.add(this)
 
-        signalsQueue.add(Signal(command, signature, flagsSet))
+            if (flags.contains(FLAG_STOPS_LOADING_AFTER)
+                && !flags.contains(FLAG_STOPS_LOADING_BEFORE)
+            )
+                signalsQueue.add(StopLoading(signature))
 
-        if (flagsSet.contains(FLAG_STOPS_LOADING_AFTER)
-            && !flagsSet.contains(FLAG_STOPS_LOADING_BEFORE)
-        )
-            signalsQueue.add(Signal(STOP_LOADING, signature, flagsSet))
-
-        if (flagsSet.contains(FLAG_IS_LAST_IN_SEQUENCE))
-            signalsQueue.add(Signal(SIT_IDLE, signature, flagsSet))
+            if (flags.contains(FLAG_IS_LAST_IN_SEQUENCE))
+                signalsQueue.add(SitIdle(signature))
+        }
 
         if (!isWaitingForAcknowledgement) {
             isWaitingForAcknowledgement = true
@@ -65,6 +67,6 @@ abstract class Base(application: Application) : AndroidViewModel(application) {
         if (signalsQueue.isEmpty()) {
             isWaitingForAcknowledgement = false
         } else
-            signalsEmitterMLive.postValue(signalsQueue.poll())
+            _signalsEmitter.postValue(signalsQueue.poll())
     }
 }
