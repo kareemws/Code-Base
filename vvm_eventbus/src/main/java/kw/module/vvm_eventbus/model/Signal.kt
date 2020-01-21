@@ -1,8 +1,6 @@
 package kw.module.vvm_eventbus.model
 
-import androidx.collection.ArraySet
-
-sealed class Signal(val signature: String, val flags: ArraySet<Int> = ArraySet()) {
+sealed class Signal(val signature: String, val flags: IntArray = intArrayOf()) {
     companion object {
         const val FLAG_REQUIRES_LOADING = 0
         const val FLAG_CAUSES_NAVIGATION = 1
@@ -13,7 +11,7 @@ sealed class Signal(val signature: String, val flags: ArraySet<Int> = ArraySet()
 }
 
 class Load(signature: String) : Signal(signature)
-class StopLoading(signature: String, flags: ArraySet<Int> = ArraySet()) : Signal(signature, flags)
-class SitIdle(signature: String, flags: ArraySet<Int> = ArraySet()) : Signal(signature, flags)
-abstract class CustomSignal(signature: String, flags: ArraySet<Int> = ArraySet()) :
+class StopLoading(signature: String, vararg flags: Int) : Signal(signature, flags)
+class SitIdle(signature: String, vararg flags: Int) : Signal(signature, flags)
+abstract class CustomSignal(signature: String, flags: IntArray = intArrayOf()) :
     Signal(signature, flags)

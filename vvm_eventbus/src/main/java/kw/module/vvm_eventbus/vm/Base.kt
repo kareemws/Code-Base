@@ -31,7 +31,7 @@ abstract class Base(application: Application) : AndroidViewModel(application) {
         if (signal.flags.contains(FLAG_CAUSES_NAVIGATION)) {
             isWaitingForAcknowledgement = false
             signalsQueue.clear()
-            _signalsEmitter.value = SitIdle(signature, ArraySet())
+            _signalsEmitter.value = SitIdle(signature)
         } else if (signal.signature == signature)
             pollNext()
     }
