@@ -37,20 +37,19 @@ abstract class Base(application: Application) : AndroidViewModel(application) {
 
     private var isWaitingForAcknowledgement: Boolean = false
 
-    private val signalsEmitterMLive = MutableLiveData<Signal>()
-
-    val signalsEmitter: LiveData<Signal> = signalsEmitterMLive
+    private val _signalsEmitter = MutableLiveData<Signal>()
+    val signalsEmitter: LiveData<Signal> = _signalsEmitter
 
     open fun acknowledgeSignal(signal: Signal) {
         if (signal.flags.contains(FLAG_CAUSES_NAVIGATION)) {
             isWaitingForAcknowledgement = false
             signalsQueue.clear()
-            signalsEmitterMLive.value = SitIdle(signature, ArraySet())
+            _signalsEmitter.value = SitIdle(signature, ArraySet())
         } else if (signal.signature == signature)
             pollNext()
     }
 
-    protected fun enqueueCommand(signal: Signal) {
+    protected fun enqueueSignal(signal: Signal) {
         signal.apply {
             if (flags.contains(FLAG_REQUIRES_LOADING))
                 signalsQueue.add(Load(signature))
@@ -78,7 +77,7 @@ abstract class Base(application: Application) : AndroidViewModel(application) {
         if (signalsQueue.isEmpty()) {
             isWaitingForAcknowledgement = false
         } else
-            signalsEmitterMLive.postValue(signalsQueue.poll())
+            _signalsEmitter.postValue(signalsQueue.poll())
     }
 
     override fun onCleared() {
