@@ -1,2 +1,2 @@
-include ':app', ':signal'
+include ':app', ':vvm_eventbus'
 rootProject.name='Code Base'

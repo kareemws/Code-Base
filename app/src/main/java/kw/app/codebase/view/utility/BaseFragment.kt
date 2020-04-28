@@ -15,12 +15,12 @@ abstract class BaseFragment : Fragment() {
 
     private val signalsQueue = LinkedList<Signal>()
 
-    private val internalSignalsEmitterMLive = MutableLiveData<Signal>()
-    protected val internalSignalsEmitter: LiveData<Signal> = internalSignalsEmitterMLive
+    private val _internalSignalsEmitter = MutableLiveData<Signal>()
+    private val internalSignalsEmitter: LiveData<Signal> = _internalSignalsEmitter
 
     private var isProcessing: Boolean = false
 
-    protected val externalSignalsObserver = Observer<Signal> { signal ->
+    private val externalSignalsObserver = Observer<Signal> { signal ->
         signalsQueue.add(signal)
         if (!isProcessing) {
             isProcessing = true
@@ -32,7 +32,7 @@ abstract class BaseFragment : Fragment() {
         if (signalsQueue.isEmpty())
             isProcessing = false
         else
-            internalSignalsEmitterMLive.postValue(signalsQueue.poll())
+            _internalSignalsEmitter.postValue(signalsQueue.poll())
     }
 
     protected fun setupSignalsObservers(
