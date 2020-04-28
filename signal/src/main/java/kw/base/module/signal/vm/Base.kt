@@ -41,19 +41,19 @@ abstract class Base(application: Application) : AndroidViewModel(application) {
         val flagsSet = flags.toCollection(ArraySet())
 
         if (flagsSet.contains(FLAG_REQUIRES_LOADING))
-            signalsQueue.add(Signal(LOAD, signature, flagsSet))
+            signalsQueue.add(Signal(LOAD, signature, ArraySet()))
         else if (flagsSet.contains(FLAG_STOPS_LOADING_BEFORE))
-            signalsQueue.add(Signal(STOP_LOADING, signature, flagsSet))
+            signalsQueue.add(Signal(STOP_LOADING, signature, ArraySet()))
 
         signalsQueue.add(Signal(command, signature, flagsSet))
 
         if (flagsSet.contains(FLAG_STOPS_LOADING_AFTER)
             && !flagsSet.contains(FLAG_STOPS_LOADING_BEFORE)
         )
-            signalsQueue.add(Signal(STOP_LOADING, signature, flagsSet))
+            signalsQueue.add(Signal(STOP_LOADING, signature, ArraySet()))
 
         if (flagsSet.contains(FLAG_IS_LAST_IN_SEQUENCE))
-            signalsQueue.add(Signal(SIT_IDLE, signature, flagsSet))
+            signalsQueue.add(Signal(SIT_IDLE, signature, ArraySet()))
 
         if (!isWaitingForAcknowledgement) {
             isWaitingForAcknowledgement = true
